@@ -1682,6 +1682,7 @@ dependencies = [
  "calloop 0.14.4",
  "frutiger-config",
  "frutiger-render",
+ "frutiger-shell",
  "smithay",
  "thiserror 2.0.20",
  "tracing",

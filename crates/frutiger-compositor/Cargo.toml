@@ -15,3 +15,4 @@ anyhow.workspace = true
 winit.workspace = true
 frutiger-render.workspace = true
 frutiger-config.workspace = true
+frutiger-shell.workspace = true

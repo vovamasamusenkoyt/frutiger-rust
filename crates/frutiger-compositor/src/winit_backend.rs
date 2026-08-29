@@ -20,12 +20,17 @@ use tracing::info;
 
 use crate::state::{ClientState, FrutigerState};
 use frutiger_config::FrutigerConfig;
+use frutiger_shell::FrutigerShell;
 
 pub fn run_winit(config: FrutigerConfig) -> anyhow::Result<()> {
-    info!("Starting Frutiger Rust in Nested (Winit) mode...");
+    info!("Starting Frutiger Rust in Nested (Winit) mode with Frutiger Aero Shell...");
 
     let mut event_loop: EventLoop<FrutigerState> = EventLoop::try_new()?;
     let display: Display<FrutigerState> = Display::new()?;
+
+    // Initialize Slint Shell
+    let shell = FrutigerShell::new()?;
+    info!("Frutiger Aero Shell initialized (Panel + Launcher)");
 
     let (mut backend, mut winit_event_loop) = winit::init::<GlesRenderer>()
         .map_err(|e| anyhow::anyhow!("Failed to init winit backend: {:?}", e))?;
@@ -41,7 +46,7 @@ pub fn run_winit(config: FrutigerConfig) -> anyhow::Result<()> {
             size: (0, 0).into(),
             subpixel: Subpixel::Unknown,
             make: "Frutiger".into(),
-            model: "Nested".into(),
+            model: "Nested Window".into(),
         },
     );
 
@@ -72,7 +77,7 @@ pub fn run_winit(config: FrutigerConfig) -> anyhow::Result<()> {
     std::env::set_var("WAYLAND_DISPLAY", &socket_name);
 
     info!("=== Frutiger Rust Compositor Ready ===");
-    info!("Try opening a client in a separate terminal: WAYLAND_DISPLAY={} alacritty", socket_name);
+    info!("Open a Wayland app in another terminal: WAYLAND_DISPLAY={} foot", socket_name);
 
     while state.is_running {
         let _status = winit_event_loop.dispatch_new_events(|event| match event {
@@ -84,7 +89,7 @@ pub fn run_winit(config: FrutigerConfig) -> anyhow::Result<()> {
                 output.change_current_state(Some(mode), None, None, None);
             }
             WinitEvent::Input(_event) => {
-                // Input handling
+                // Input dispatch
             }
             WinitEvent::CloseRequested => {
                 state.is_running = false;
@@ -93,9 +98,18 @@ pub fn run_winit(config: FrutigerConfig) -> anyhow::Result<()> {
                 let size = backend.window_size();
                 let damage = Rectangle::new((0, 0).into(), size);
 
+                // Update clock
+                let now = std::time::SystemTime::now();
+                if let Ok(duration) = now.duration_since(std::time::UNIX_EPOCH) {
+                    let secs = duration.as_secs();
+                    let hours = (secs / 3600 + 3) % 24; // MSK UTC+3
+                    let mins = (secs % 3600) / 60;
+                    shell.update_time(&format!("{:02}:{:02}", hours, mins));
+                }
+
                 let render_result = if let Ok((renderer, mut target)) = backend.bind() {
                     let elements: Vec<WaylandSurfaceRenderElement<GlesRenderer>> = Vec::new();
-                    let clear_color = [0.12f32, 0.45, 0.78, 1.0]; // Frutiger Aqua background
+                    let clear_color = [0.10f32, 0.52, 0.82, 1.0]; // Vibrant Frutiger Aqua Glass Sky
                     damage_tracker.render_output(
                         renderer,
                         &mut target,

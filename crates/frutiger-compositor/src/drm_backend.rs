@@ -31,12 +31,17 @@ use tracing::{info, warn};
 
 use crate::state::{ClientState, FrutigerState};
 use frutiger_config::FrutigerConfig;
+use frutiger_shell::FrutigerShell;
 
 pub fn run_drm(config: FrutigerConfig) -> anyhow::Result<()> {
-    info!("Starting Frutiger Rust on Native DRM/KMS backend...");
+    info!("Starting Frutiger Rust on Native DRM/KMS backend with Frutiger Aero Shell...");
 
     let mut event_loop: EventLoop<FrutigerState> = EventLoop::try_new()?;
     let display: Display<FrutigerState> = Display::new()?;
+
+    // Initialize Slint Shell
+    let shell = FrutigerShell::new()?;
+    info!("Frutiger Aero Shell initialized (Panel + Launcher)");
 
     // 1. Session initialization (LibSeat / seatd)
     let (mut session, _session_notifier) = match LibSeatSession::new() {
@@ -146,6 +151,15 @@ pub fn run_drm(config: FrutigerConfig) -> anyhow::Result<()> {
     // 6. Frame Render Loop
     let timer = Timer::from_duration(Duration::from_millis(16));
     event_loop.handle().insert_source(timer, move |_deadline, _, _state| {
+        // Update live clock
+        let now = std::time::SystemTime::now();
+        if let Ok(duration) = now.duration_since(std::time::UNIX_EPOCH) {
+            let secs = duration.as_secs();
+            let hours = (secs / 3600 + 3) % 24; // MSK UTC+3
+            let mins = (secs % 3600) / 60;
+            shell.update_time(&format!("{:02}:{:02}", hours, mins));
+        }
+
         TimeoutAction::ToDuration(Duration::from_millis(16))
     }).map_err(|e| anyhow::anyhow!("Timer insert error: {:?}", e))?;
 
