@@ -1,16 +1,40 @@
 slint::include_modules!();
 
+use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use slint::ComponentHandle;
+use slint::platform::software_renderer::MinimalSoftwareWindow;
+use slint::platform::Platform;
+
+struct FrutigerPlatform {
+    window: Rc<MinimalSoftwareWindow>,
+}
+
+impl Platform for FrutigerPlatform {
+    fn create_window_adapter(
+        &self,
+    ) -> Result<Rc<dyn slint::platform::WindowAdapter>, slint::PlatformError> {
+        Ok(self.window.clone())
+    }
+}
 
 pub struct FrutigerShell {
     pub window: ShellWindow,
+    pub window_adapter: Rc<MinimalSoftwareWindow>,
     pub is_launcher_open: Arc<AtomicBool>,
 }
 
 impl FrutigerShell {
     pub fn new() -> anyhow::Result<Self> {
+        let window_adapter = MinimalSoftwareWindow::new(Default::default());
+        
+        // Set custom platform so Slint renders in headless/embedded compositor mode
+        let platform = Box::new(FrutigerPlatform {
+            window: window_adapter.clone(),
+        });
+        
+        let _ = slint::platform::set_platform(platform);
+
         let window = ShellWindow::new()
             .map_err(|e| anyhow::anyhow!("Failed to create ShellWindow: {:?}", e))?;
 
@@ -46,6 +70,7 @@ impl FrutigerShell {
 
         Ok(Self {
             window,
+            window_adapter,
             is_launcher_open,
         })
     }
