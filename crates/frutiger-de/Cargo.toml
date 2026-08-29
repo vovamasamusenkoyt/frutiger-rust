@@ -1,0 +1,20 @@
+[package]
+name = "frutiger-de"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "frutiger-de"
+path = "src/main.rs"
+
+[dependencies]
+frutiger-compositor.workspace = true
+frutiger-render.workspace = true
+frutiger-shell.workspace = true
+frutiger-config.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+clap.workspace = true
+anyhow.workspace = true

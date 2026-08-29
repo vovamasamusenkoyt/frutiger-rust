@@ -1,0 +1,23 @@
+-- Frutiger Rust DE Configuration
+-- Aesthetic: Frutiger Aero / Liquid Glass
+
+-- Wallpaper setting (leave nil for procedural Aqua Glass gradient)
+de.wallpaper = nil
+
+-- Liquid Glass Shader Effects
+de.glass = {
+    blur_radius = 14.0,           -- Dual-Kawase blur strength
+    refraction_strength = 0.07,   -- Glass edge refraction / lens bulge
+    chromatic_aberration = 0.02,  -- RGB split on distorted edges
+    corner_radius = 16.0,         -- Window & panel rounded corners
+    specular_strength = 0.7,      -- Glossy top-sheen and reflection
+}
+
+-- Keybindings
+-- Format: de.keys.bind("<Modifier>+<Key>", "<action>")
+de.keys.bind("Super+Return", "spawn:foot")
+de.keys.bind("Super+t", "spawn:alacritty")
+de.keys.bind("Super+d", "toggle_launcher")
+de.keys.bind("Super+Space", "toggle_launcher")
+de.keys.bind("Super+q", "close_window")
+de.keys.bind("Super+Shift+e", "quit")

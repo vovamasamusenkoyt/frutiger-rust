@@ -1,0 +1,57 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/frutiger-render",
+    "crates/frutiger-shell",
+    "crates/frutiger-config",
+    "crates/frutiger-compositor",
+    "crates/frutiger-de",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["vmko"]
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+# Graphics & Rendering
+wgpu = "24.0.0"
+bytemuck = { version = "1.21", features = ["derive"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
+
+# Wayland Compositor (Smithay)
+smithay = { version = "0.7.0", default-features = false, features = [
+    "backend_drm",
+    "backend_libinput",
+    "backend_winit",
+    "backend_gbm",
+    "backend_egl",
+    "renderer_gl",
+    "desktop",
+    "wayland_frontend",
+    "backend_session",
+    "backend_session_libseat",
+] }
+wayland-server = "0.31"
+calloop = "0.14"
+
+# UI
+slint = "1.17"
+
+# Scripting & Config
+mlua = { version = "0.12", features = ["lua54", "vendored"] }
+
+# Utilities & Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+thiserror = "2.0"
+anyhow = "1.0"
+winit = "0.30"
+clap = { version = "4.5", features = ["derive"] }
+
+# Internal crates
+frutiger-render = { path = "crates/frutiger-render" }
+frutiger-shell = { path = "crates/frutiger-shell" }
+frutiger-config = { path = "crates/frutiger-config" }
+frutiger-compositor = { path = "crates/frutiger-compositor" }

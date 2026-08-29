@@ -1,0 +1,157 @@
+component FrutigerPanel inherits Rectangle {
+    in property <string> time_text: "12:00";
+    in property <string> current_window_title: "Frutiger Aero Desktop";
+    in property <int> active_workspace: 1;
+    in property <bool> launcher_open: false;
+
+    callback toggle_launcher();
+    callback workspace_selected(int);
+    callback launch_app(string);
+
+    height: 40px;
+    background: @linear-gradient(180deg, #ffffff44 0%, #1e6fa033 50%, #0d385566 100%);
+    border-width: 1px;
+    border-color: #ffffff88;
+
+    HorizontalLayout {
+        padding-left: 12px;
+        padding-right: 12px;
+        spacing: 12px;
+        alignment: space-between;
+
+        // Left Section: Frutiger Orb Menu & Workspaces
+        HorizontalLayout {
+            spacing: 8px;
+            alignment: start;
+
+            // Glossy Aqua Orb Button
+            Rectangle {
+                width: 32px;
+                height: 32px;
+                border-radius: 16px;
+                background: @linear-gradient(180deg, #66e0ffcc 0%, #0099ccdd 60%, #004466ee 100%);
+                border-width: 1.5px;
+                border-color: #ffffffcc;
+
+                TouchArea {
+                    clicked => { root.toggle_launcher(); }
+                }
+
+                Text {
+                    text: "🫧";
+                    font-size: 16px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+            // Workspaces 1..4
+            HorizontalLayout {
+                spacing: 4px;
+                for ws in [1, 2, 3, 4]: Rectangle {
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 6px;
+                    background: root.active_workspace == ws ? #ffffff66 : #ffffff1a;
+                    border-width: 1px;
+                    border-color: root.active_workspace == ws ? #ffffffcc : #ffffff33;
+
+                    TouchArea {
+                        clicked => { root.workspace_selected(ws); }
+                    }
+
+                    Text {
+                        text: ws;
+                        color: root.active_workspace == ws ? #ffffff : #ffffffaa;
+                        font-weight: root.active_workspace == ws ? 700 : 400;
+                        font-size: 13px;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+
+        // Center Section: Active Window / Desktop Title
+        HorizontalLayout {
+            alignment: center;
+            Rectangle {
+                height: 28px;
+                border-radius: 6px;
+                background: #ffffff15;
+                border-width: 1px;
+                border-color: #ffffff22;
+
+                HorizontalLayout {
+                    padding-left: 14px;
+                    padding-right: 14px;
+                    Text {
+                        text: root.current_window_title;
+                        color: #ffffff;
+                        font-size: 13px;
+                        font-weight: 500;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+
+        // Right Section: Tray & Clock
+        HorizontalLayout {
+            spacing: 8px;
+            alignment: end;
+
+            Rectangle {
+                height: 28px;
+                border-radius: 6px;
+                background: #ffffff18;
+                border-width: 1px;
+                border-color: #ffffff33;
+
+                HorizontalLayout {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    spacing: 8px;
+                    Text { text: "🔊"; font-size: 12px; vertical-alignment: center; }
+                    Text { text: "📶"; font-size: 12px; vertical-alignment: center; }
+                    Text { text: "🔋"; font-size: 12px; vertical-alignment: center; }
+                    Text {
+                        text: root.time_text;
+                        color: #ffffff;
+                        font-size: 13px;
+                        font-weight: 600;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+    }
+}
+
+export component ShellWindow inherits Window {
+    title: "Frutiger Shell";
+    no-frame: true;
+    background: transparent;
+
+    in property <string> time_text: "18:00";
+    in property <string> current_window_title: "Frutiger Aero Desktop";
+    in property <int> active_workspace: 1;
+    in property <bool> launcher_open: false;
+
+    callback toggle_launcher();
+    callback workspace_selected(int);
+    callback launch_app(string);
+
+    VerticalLayout {
+        alignment: start;
+        FrutigerPanel {
+            time_text: root.time_text;
+            current_window_title: root.current_window_title;
+            active_workspace: root.active_workspace;
+            launcher_open: root.launcher_open;
+            toggle_launcher => { root.toggle_launcher(); }
+            workspace_selected(ws) => { root.workspace_selected(ws); }
+            launch_app(app) => { root.launch_app(app); }
+        }
+    }
+}

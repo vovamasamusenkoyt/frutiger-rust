@@ -1,0 +1,10 @@
+[build]
+# Limit parallel compilation jobs to 4 to prevent CPU/RAM saturation & UI freezes
+jobs = 4
+
+[profile.dev]
+# Reduce parallel codegen units to lower peak memory and CPU usage
+codegen-units = 4
+
+[profile.release]
+codegen-units = 4
