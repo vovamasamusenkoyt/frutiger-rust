@@ -1,17 +1,17 @@
 [workspace]
 members = [
-    "niri-config",
-    "niri-ipc",
-    "niri-visual-tests",
+    "frutiger-config",
+    "frutiger-ipc",
+    "frutiger-visual-tests",
 ]
 
 [workspace.package]
-version = "26.4.0"
-description = "A scrollable-tiling Wayland compositor"
-authors = ["Ivan Molodetskikh <yalterz@gmail.com>"]
+version = "0.1.0"
+description = "A scrollable-tiling Frutiger Aero Wayland compositor"
+authors = ["Frutiger Rust Team"]
 license = "GPL-3.0-or-later"
 edition = "2021"
-repository = "https://github.com/niri-wm/niri"
+repository = "https://github.com/vovamasamusenkoyt/frutiger-rust"
 rust-version = "1.87"
 
 [workspace.dependencies]
@@ -26,19 +26,16 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 tracy-client = { version = "0.18.4", default-features = false }
 
 [workspace.dependencies.smithay]
-# version = "0.4.1"
 git = "https://github.com/Smithay/smithay.git"
 rev = "4cf0b62028039661477d482ec4758b687d8f4392"
 default-features = false
 
 [workspace.dependencies.smithay-drm-extras]
-# version = "0.1.0"
 git = "https://github.com/Smithay/smithay.git"
 rev = "4cf0b62028039661477d482ec4758b687d8f4392"
-# path = "../smithay/smithay-drm-extras"
 
 [package]
-name = "niri"
+name = "frutiger"
 version.workspace = true
 description.workspace = true
 authors.workspace = true
@@ -46,9 +43,14 @@ license.workspace = true
 edition.workspace = true
 repository.workspace = true
 rust-version.workspace = true
+default-run = "frutiger"
 
 readme = "README.md"
-keywords = ["wayland", "compositor", "tiling", "smithay", "wm"]
+keywords = ["wayland", "compositor", "frutiger-aero", "liquid-glass", "wm"]
+
+[[bin]]
+name = "frutiger"
+path = "src/main.rs"
 
 [dependencies]
 accesskit = { version = "0.24", optional = true }
@@ -75,8 +77,8 @@ keyframe = { version = "1.1.1", default-features = false }
 libc = "0.2.189"
 libdisplay-info = "0.3.0"
 log = { version = "0.4.33", features = ["max_level_trace", "release_max_level_debug"] }
-niri-config = { version = "26.4.0", path = "niri-config" }
-niri-ipc = { version = "26.4.0", path = "niri-ipc", features = ["clap"] }
+frutiger-config = { version = "0.1.0", path = "frutiger-config" }
+frutiger-ipc = { version = "0.1.0", path = "frutiger-ipc", features = ["clap"] }
 ordered-float = "5.3.0"
 pango = { version = "0.21.5", features = ["v1_44"] }
 pangocairo = "0.21.5"
@@ -130,19 +132,12 @@ pkg-config = "0.3.33"
 
 [features]
 default = ["dbus", "systemd", "xdp-gnome-screencast"]
-# Enables D-Bus support (serve various freedesktop and GNOME interfaces, accessibility tree, power button handling).
 dbus = ["dep:zbus", "dep:async-io", "dep:accesskit", "dep:accesskit_unix"]
-# Enables systemd integration (global environment, apps in transient scopes).
 systemd = ["dbus"]
-# Enables screencasting support through xdg-desktop-portal-gnome.
 xdp-gnome-screencast = ["dbus", "pipewire"]
-# Enables the Tracy profiler instrumentation.
 profile-with-tracy = ["profiling/profile-with-tracy", "tracy-client/default", "smithay/tracy_gpu_profiling"]
-# Enables the on-demand Tracy profiler instrumentation.
 profile-with-tracy-ondemand = ["profile-with-tracy", "tracy-client/ondemand", "tracy-client/manual-lifetime"]
-# Enables Tracy allocation profiling.
 profile-with-tracy-allocations = ["profile-with-tracy"]
-# Enables dinit integration (global environment).
 dinit = []
 
 [lints.clippy]
@@ -154,35 +149,9 @@ debug = "line-tables-only"
 overflow-checks = true
 lto = "thin"
 
-[profile.release.package.niri-config]
-# knuffel with chomsky generates a metric ton of debuginfo.
+[profile.release.package.frutiger-config]
 debug = false
 
 [profile.dev.package]
 insta.opt-level = 3
 similar.opt-level = 3
-
-[package.metadata.generate-rpm]
-version = "26.04"
-assets = [
-    { source = "target/release/niri", dest = "/usr/bin/", mode = "755" },
-    { source = "resources/niri-session", dest = "/usr/bin/", mode = "755" },
-    { source = "resources/niri.desktop", dest = "/usr/share/wayland-sessions/", mode = "644" },
-    { source = "resources/niri-portals.conf", dest = "/usr/share/xdg-desktop-portal/", mode = "644" },
-    { source = "resources/niri.service", dest = "/usr/lib/systemd/user/", mode = "644" },
-    { source = "resources/niri-shutdown.target", dest = "/usr/lib/systemd/user/", mode = "644" },
-]
-[package.metadata.generate-rpm.requires]
-alacritty = "*"
-fuzzel = "*"
-
-[package.metadata.deb]
-depends = "alacritty, fuzzel"
-assets = [
-    ["target/release/niri", "usr/bin/", "755"],
-    ["resources/niri-session", "usr/bin/", "755"],
-    ["resources/niri.desktop", "/usr/share/wayland-sessions/", "644"],
-    ["resources/niri-portals.conf", "/usr/share/xdg-desktop-portal/", "644"],
-    ["resources/niri.service", "/usr/lib/systemd/user/", "644"],
-    ["resources/niri-shutdown.target", "/usr/lib/systemd/user/", "644"],
-]

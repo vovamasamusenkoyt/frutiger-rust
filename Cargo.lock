@@ -1068,6 +1068,109 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
 
 [[package]]
+name = "frutiger"
+version = "0.1.0"
+dependencies = [
+ "accesskit",
+ "accesskit_unix",
+ "anyhow",
+ "approx",
+ "arrayvec",
+ "async-channel",
+ "async-io",
+ "atomic",
+ "bitflags",
+ "bytemuck",
+ "calloop",
+ "calloop-wayland-source",
+ "clap",
+ "clap_complete",
+ "clap_complete_nushell",
+ "directories",
+ "drm-ffi",
+ "fastrand",
+ "frutiger-config",
+ "frutiger-ipc",
+ "futures-util",
+ "git-version",
+ "glam",
+ "input",
+ "insta",
+ "keyframe",
+ "libc",
+ "libdisplay-info",
+ "log",
+ "ordered-float",
+ "pango",
+ "pangocairo",
+ "pipewire",
+ "pkg-config",
+ "png",
+ "portable-atomic",
+ "profiling",
+ "proptest",
+ "proptest-derive",
+ "rayon",
+ "sd-notify",
+ "serde",
+ "serde_json",
+ "smithay",
+ "smithay-drm-extras",
+ "tracing",
+ "tracing-subscriber",
+ "tracy-client",
+ "wayland-backend",
+ "wayland-client",
+ "wayland-scanner",
+ "wayland-server",
+ "xcursor",
+ "xshell",
+ "zbus",
+]
+
+[[package]]
+name = "frutiger-config"
+version = "0.1.0"
+dependencies = [
+ "bitflags",
+ "csscolorparser",
+ "diff",
+ "frutiger-ipc",
+ "insta",
+ "knuffel",
+ "miette",
+ "pretty_assertions",
+ "regex",
+ "smithay",
+ "tracing",
+ "tracy-client",
+]
+
+[[package]]
+name = "frutiger-ipc"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "schemars",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "frutiger-visual-tests"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "frutiger",
+ "frutiger-config",
+ "gtk4",
+ "libadwaita",
+ "smithay",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "futures-channel"
 version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2114,109 +2217,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee6cda3051665f1fb8d9e08fc35c96d5a244fb1be711a03b71118828afc9a873"
 dependencies = [
  "jni-sys 0.3.1",
-]
-
-[[package]]
-name = "niri"
-version = "26.4.0"
-dependencies = [
- "accesskit",
- "accesskit_unix",
- "anyhow",
- "approx",
- "arrayvec",
- "async-channel",
- "async-io",
- "atomic",
- "bitflags",
- "bytemuck",
- "calloop",
- "calloop-wayland-source",
- "clap",
- "clap_complete",
- "clap_complete_nushell",
- "directories",
- "drm-ffi",
- "fastrand",
- "futures-util",
- "git-version",
- "glam",
- "input",
- "insta",
- "keyframe",
- "libc",
- "libdisplay-info",
- "log",
- "niri-config",
- "niri-ipc",
- "ordered-float",
- "pango",
- "pangocairo",
- "pipewire",
- "pkg-config",
- "png",
- "portable-atomic",
- "profiling",
- "proptest",
- "proptest-derive",
- "rayon",
- "sd-notify",
- "serde",
- "serde_json",
- "smithay",
- "smithay-drm-extras",
- "tracing",
- "tracing-subscriber",
- "tracy-client",
- "wayland-backend",
- "wayland-client",
- "wayland-scanner",
- "wayland-server",
- "xcursor",
- "xshell",
- "zbus",
-]
-
-[[package]]
-name = "niri-config"
-version = "26.4.0"
-dependencies = [
- "bitflags",
- "csscolorparser",
- "diff",
- "insta",
- "knuffel",
- "miette",
- "niri-ipc",
- "pretty_assertions",
- "regex",
- "smithay",
- "tracing",
- "tracy-client",
-]
-
-[[package]]
-name = "niri-ipc"
-version = "26.4.0"
-dependencies = [
- "clap",
- "schemars",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "niri-visual-tests"
-version = "26.4.0"
-dependencies = [
- "anyhow",
- "gtk4",
- "libadwaita",
- "niri",
- "niri-config",
- "smithay",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

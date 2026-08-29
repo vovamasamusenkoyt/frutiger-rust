@@ -1,0 +1,80 @@
+#!/bin/sh
+
+# Detect if being run as a user service, which implies external session management,
+# exec compositor directly
+if [ -n "${MANAGERPID:-}" ] && [ "${SYSTEMD_EXEC_PID:-}" = "$$" ]; then
+    case "$(ps -p "$MANAGERPID" -o cmd=)" in
+    *systemd*--user*)
+        exec frutiger --session
+        ;;
+    esac
+fi
+
+if [ -n "$SHELL" ] &&
+   grep -q "$SHELL" /etc/shells &&
+   ! (echo "$SHELL" | grep -q "false") &&
+   ! (echo "$SHELL" | grep -q "nologin"); then
+  if [ "$1" != '-l' ]; then
+    exec bash -c "exec -l '$SHELL' -c 'exec $0 -l $*'"
+  else
+    shift
+  fi
+fi
+
+# Try to detect the service manager that is being used
+if hash systemctl >/dev/null 2>&1; then
+    # Make sure there's no already running session.
+    if systemctl --user -q is-active frutiger.service; then
+      echo 'A Frutiger session is already running.'
+      exit 1
+    fi
+
+    # Reset failed state of all user units.
+    systemctl --user reset-failed
+
+    # Import the login manager environment.
+    systemctl --user import-environment
+
+    # DBus activation environment is independent from systemd.
+    if hash dbus-update-activation-environment 2>/dev/null; then
+        dbus-update-activation-environment --all
+    fi
+
+    # Start frutiger and wait for it to terminate.
+    systemctl --user --wait start frutiger.service
+
+    # Force stop of graphical-session.target.
+    systemctl --user start --job-mode=replace-irreversibly frutiger-shutdown.target
+
+    # Unset environment that we've set.
+    systemctl --user unset-environment WAYLAND_DISPLAY DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP FRUTIGER_SOCKET NIRI_SOCKET
+elif hash dinitctl >/dev/null 2>&1; then
+    if ! pgrep -u "$(id -u)" dinit >/dev/null 2>&1; then
+      echo "dinit user daemon is not running."
+      exit 1
+    fi
+
+    if dinitctl --quiet --user is-started frutiger 2>/dev/null; then
+      echo 'A Frutiger session is already running.'
+      exit 1
+    fi
+
+    awk 'BEGIN{for(v in ENVIRON) if (v != "AWKPATH" && v != "AWKLIBPATH") print v}' 2>/dev/null | xargs dinitctl --quiet --user setenv 2>/dev/null
+
+    if hash dbus-update-activation-environment >/dev/null 2>&1; then
+        dbus-update-activation-environment --all >/dev/null 2>&1
+    fi
+
+    mkdir --parents "$HOME/.local/share/frutiger"
+    dinitctl --quiet --user start frutiger.target 2>&1
+
+    dinit-monitor --user --initial -c 'sh -c "
+        if [ "%s" = "stopped" ] || [ "%s" = "failed" ]; then
+            ppid=$(ps -o ppid= -p $$)
+            kill "$ppid"
+        fi"' frutiger >/dev/null 2>&1
+
+    dinitctl --quiet --user unsetenv WAYLAND_DISPLAY DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP FRUTIGER_SOCKET NIRI_SOCKET 2>/dev/null
+else
+    echo "No systemd or dinit detected, please use frutiger --session instead."
+fi

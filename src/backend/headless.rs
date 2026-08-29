@@ -7,7 +7,7 @@ use std::mem;
 use std::sync::{Arc, Mutex};
 
 use anyhow::Context as _;
-use niri_config::OutputName;
+use frutiger_config::OutputName;
 use smithay::backend::allocator::dmabuf::Dmabuf;
 use smithay::backend::egl::native::EGLSurfacelessDisplay;
 use smithay::backend::egl::{EGLContext, EGLDisplay};
@@ -92,13 +92,13 @@ impl Headless {
         let physical_properties = output.physical_properties();
         self.ipc_outputs.lock().unwrap().insert(
             OutputId::next(),
-            niri_ipc::Output {
+            frutiger_ipc::Output {
                 name: output.name(),
                 make: physical_properties.make,
                 model: physical_properties.model,
                 serial: None,
                 physical_size: None,
-                modes: vec![niri_ipc::Mode {
+                modes: vec![frutiger_ipc::Mode {
                     width: size.0,
                     height: size.1,
                     refresh_rate: 60_000,

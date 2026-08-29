@@ -7,8 +7,8 @@ use std::rc::Rc;
 
 use anyhow::Context;
 use arrayvec::ArrayVec;
-use niri_config::{Action, Config};
-use niri_ipc::SizeChange;
+use frutiger_config::{Action, Config};
+use frutiger_ipc::SizeChange;
 use pango::{Alignment, FontDescription};
 use pangocairo::cairo::{self, ImageSurface};
 use smithay::backend::allocator::Fourcc;

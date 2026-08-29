@@ -1,12 +1,12 @@
 use std::cmp::{max, min};
 
-use niri_config::utils::MergeWith as _;
-use niri_config::window_rule::{Match, OnXdgActivate, WindowRule};
-use niri_config::{
+use frutiger_config::utils::MergeWith as _;
+use frutiger_config::window_rule::{Match, OnXdgActivate, WindowRule};
+use frutiger_config::{
     BackgroundEffect, BlockOutFrom, BorderRule, CornerRadius, FloatingPosition, PresetSize,
     ResolvedPopupsRules, ShadowRule, TabIndicatorRule,
 };
-use niri_ipc::ColumnDisplay;
+use frutiger_ipc::ColumnDisplay;
 use smithay::reexports::wayland_protocols::xdg::shell::server::xdg_toplevel;
 use smithay::utils::{Logical, Size};
 use smithay::wayland::compositor::with_states;

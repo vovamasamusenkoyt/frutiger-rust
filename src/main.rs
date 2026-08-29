@@ -15,18 +15,18 @@ use clap::{CommandFactory, Parser};
 use clap_complete::Shell;
 use clap_complete_nushell::Nushell;
 use directories::ProjectDirs;
-use niri::cli::{Cli, CompletionShell, Sub};
+use frutiger::cli::{Cli, CompletionShell, Sub};
 #[cfg(feature = "dbus")]
-use niri::dbus;
-use niri::ipc::client::handle_msg;
-use niri::niri::State;
-use niri::utils::spawning::{
+use frutiger::dbus;
+use frutiger::ipc::client::handle_msg;
+use frutiger::niri::State;
+use frutiger::utils::spawning::{
     spawn, spawn_sh, store_and_increase_nofile_rlimit, CHILD_DISPLAY, CHILD_ENV,
     REMOVE_ENV_RUST_BACKTRACE, REMOVE_ENV_RUST_LIB_BACKTRACE,
 };
-use niri::utils::{cause_panic, version, watcher, xwayland, IS_SYSTEMD_SERVICE};
-use niri_config::{Config, ConfigPath};
-use niri_ipc::socket::SOCKET_PATH_ENV;
+use frutiger::utils::{cause_panic, version, watcher, xwayland, IS_SYSTEMD_SERVICE};
+use frutiger_config::{Config, ConfigPath};
+use frutiger_ipc::socket::SOCKET_PATH_ENV;
 use sd_notify::NotifyState;
 use smithay::reexports::wayland_server::Display;
 use tracing_subscriber::EnvFilter;
@@ -137,9 +137,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Needs to be done before starting Tracy, so that it applies to Tracy's threads.
-    niri::utils::signals::block_early().unwrap();
+    frutiger::utils::signals::block_early().unwrap();
 
-    // Avoid starting Tracy for the `niri msg` code path since starting/stopping Tracy is a bit
+    // Avoid starting Tracy for the `frutiger msg` code path since starting/stopping Tracy is a bit
     // slow.
     tracy_client::Client::start();
 
@@ -172,7 +172,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut event_loop = EventLoop::<State>::try_new().unwrap();
 
     // Handle Ctrl+C and other signals.
-    niri::utils::signals::listen(&event_loop.handle());
+    frutiger::utils::signals::listen(&event_loop.handle());
 
     // Create the compositor.
     let display = Display::new().unwrap();

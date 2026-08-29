@@ -2,9 +2,9 @@ use std::cmp::max;
 use std::iter::zip;
 use std::rc::Rc;
 
-use niri_config::utils::MergeWith as _;
-use niri_config::{PresetSize, RelativeTo};
-use niri_ipc::{PositionChange, SizeChange, WindowLayout};
+use frutiger_config::utils::MergeWith as _;
+use frutiger_config::{PresetSize, RelativeTo};
+use frutiger_ipc::{PositionChange, SizeChange, WindowLayout};
 use smithay::backend::renderer::gles::GlesRenderer;
 use smithay::utils::{Logical, Point, Rectangle, Scale, Serial, Size};
 
@@ -1407,7 +1407,7 @@ impl<W: LayoutElement> FloatingSpace<W> {
 }
 
 fn compute_toplevel_bounds(
-    border_config: niri_config::Border,
+    border_config: frutiger_config::Border,
     working_area_size: Size<f64, Logical>,
 ) -> Size<i32, Logical> {
     let mut border = 0.;

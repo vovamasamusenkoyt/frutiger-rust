@@ -601,7 +601,7 @@ impl ExtWorkspaceHandler for State {
     }
 
     fn activate_workspace(&mut self, id: WorkspaceId) {
-        let reference = niri_config::WorkspaceReference::Id(id.get());
+        let reference = frutiger_config::WorkspaceReference::Id(id.get());
         if let Some((mut output, index)) = self.niri.find_output_and_workspace_index(reference) {
             if let Some(active) = self.niri.layout.active_output() {
                 if output.as_ref() == Some(active) {
@@ -621,7 +621,7 @@ impl ExtWorkspaceHandler for State {
     }
 
     fn assign_workspace(&mut self, ws_id: WorkspaceId, output: Output) {
-        let reference = niri_config::WorkspaceReference::Id(ws_id.get());
+        let reference = frutiger_config::WorkspaceReference::Id(ws_id.get());
         if let Some((old_output, old_idx)) = self.niri.find_output_and_workspace_index(reference) {
             self.niri
                 .layout
@@ -816,12 +816,12 @@ impl XdgActivationHandler for State {
             if let Some((mapped, _)) = self.niri.layout.find_window_and_output_mut(&surface) {
                 let window = mapped.window.clone();
                 match mapped.rules().on_xdg_activate {
-                    Some(niri_config::OnXdgActivate::Ignore) => {}
-                    Some(niri_config::OnXdgActivate::SetUrgent) => {
+                    Some(frutiger_config::OnXdgActivate::Ignore) => {}
+                    Some(frutiger_config::OnXdgActivate::SetUrgent) => {
                         mapped.set_urgent(true);
                         self.niri.queue_redraw_all();
                     }
-                    Some(niri_config::OnXdgActivate::Focus) => {
+                    Some(frutiger_config::OnXdgActivate::Focus) => {
                         self.niri.layout.activate_window(&window);
                         self.niri.layer_shell_on_demand_focus = None;
                         self.niri.queue_redraw_all();
@@ -853,7 +853,7 @@ impl OutputManagementHandler for State {
         &mut self.niri.output_management_state
     }
 
-    fn apply_output_config(&mut self, config: niri_config::Outputs) {
+    fn apply_output_config(&mut self, config: frutiger_config::Outputs) {
         self.niri.config.borrow_mut().outputs = config;
         self.reload_output_config();
     }
