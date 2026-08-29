@@ -90,8 +90,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
 
-        // Set the current desktop for xdg-desktop-portal.
-        env::set_var("XDG_CURRENT_DESKTOP", "frutiger:niri");
+        // Set the current desktop for xdg-desktop-portal and system fetchers (fastfetch, neofetch).
+        env::set_var("XDG_CURRENT_DESKTOP", "Frutiger");
+        env::set_var("XDG_SESSION_DESKTOP", "frutiger");
+        env::set_var("DESKTOP_SESSION", "frutiger");
         // Ensure the session type is set to Wayland for xdg-autostart and Qt apps.
         env::set_var("XDG_SESSION_TYPE", "wayland");
     }
@@ -285,6 +287,8 @@ fn import_environment() {
         "WAYLAND_DISPLAY",
         "DISPLAY",
         "XDG_CURRENT_DESKTOP",
+        "XDG_SESSION_DESKTOP",
+        "DESKTOP_SESSION",
         "XDG_SESSION_TYPE",
         SOCKET_PATH_ENV,
     ]
