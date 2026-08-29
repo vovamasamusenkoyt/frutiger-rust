@@ -28,9 +28,7 @@ sshpass -p "${REMOTE_PASS}" ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${REM
     cp /tmp/default-config.kdl ~/.config/frutiger/config.kdl
     echo '${REMOTE_PASS}' | sudo -S cp /tmp/frutiger.desktop /usr/share/wayland-sessions/frutiger.desktop
     echo '${REMOTE_PASS}' | sudo -S cp /tmp/frutiger.service /usr/lib/systemd/user/frutiger.service
-    echo '${REMOTE_PASS}' | sudo -S ln -sf /usr/bin/${TARGET_BIN} /usr/bin/niri 2>/dev/null || true
-    echo '${REMOTE_PASS}' | sudo -S ln -sf /usr/bin/frutiger-session /usr/bin/niri-session 2>/dev/null || true
-    systemctl --user stop frutiger.service niri.service 2>/dev/null || true
+    systemctl --user stop frutiger.service 2>/dev/null || true
     systemctl --user daemon-reload 2>/dev/null || true
     echo '${REMOTE_PASS}' | sudo -S systemctl restart sddm
 "
