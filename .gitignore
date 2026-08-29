@@ -1,5 +1,4 @@
 /target
-**/*.rs.bk
-*.swp
-*~
-.DS_Store
+/result
+
+.idea
