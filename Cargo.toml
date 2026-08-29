@@ -2,6 +2,7 @@
 members = [
     "frutiger-config",
     "frutiger-ipc",
+    "frutiger-panel",
     "frutiger-visual-tests",
 ]
 

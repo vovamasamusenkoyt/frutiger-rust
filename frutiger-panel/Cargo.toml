@@ -1,0 +1,24 @@
+[package]
+name = "frutiger-panel"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+description = "Frutiger Aero Liquid Glass Top Panel for Wayland"
+keywords = ["wayland", "panel", "frutiger-aero", "liquid-glass"]
+readme = "README.md"
+
+[dependencies]
+anyhow.workspace = true
+chrono = "0.4"
+cairo-rs = { version = "0.21.5", features = ["use_glib"] }
+pangocairo = "0.21.5"
+pango = "0.21.5"
+frutiger-ipc = { path = "../frutiger-ipc" }
+smithay-client-toolkit = { version = "0.20.0", features = ["calloop"] }
+tracing.workspace = true
+tracing-subscriber.workspace = true
+wayland-client = "0.31.15"
+calloop = { version = "0.14.4", features = ["signals", "executor"] }
