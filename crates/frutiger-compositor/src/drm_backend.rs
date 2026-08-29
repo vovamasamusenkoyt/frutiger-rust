@@ -1,9 +1,6 @@
 use smithay::{
     backend::{
-        allocator::{
-            gbm::{GbmBufferFlags, GbmDevice},
-            Fourcc,
-        },
+        allocator::Fourcc,
         drm::{DrmDevice, DrmDeviceFd},
         session::{libseat::LibSeatSession, Session},
     },
@@ -65,7 +62,6 @@ pub fn run_drm(config: FrutigerConfig) -> anyhow::Result<()> {
 
     let drm_fd = DrmDeviceFd::new(card_fd.into());
     let (drm_device, _drm_notifier) = DrmDevice::new(drm_fd.clone(), true)?;
-    let gbm_device = GbmDevice::new(drm_fd.clone())?;
 
     // 3. Query Connectors & CRTCs
     let res_handles = drm_device.resource_handles()?;
@@ -95,24 +91,26 @@ pub fn run_drm(config: FrutigerConfig) -> anyhow::Result<()> {
     let (width, height) = (mode.size().0 as u32, mode.size().1 as u32);
     info!("Selected CRTC: {:?}, Display resolution: {}x{}@{}Hz", crtc_handle, width, height, mode.vrefresh());
 
-    // 4. Allocate GBM Scanout Buffer & Generate Frutiger Aero Wallpaper
-    info!("Allocating hardware scanout buffer on AMD GPU...");
-    let mut gbm_bo = gbm_device.create_buffer_object::<()>(
-        width,
-        height,
+    // 4. Allocate DRM Native Scanout Buffer & Fill with Frutiger Aero Wallpaper
+    info!("Allocating scanout buffer on AMD GPU...");
+    let mut dumb_buffer = drm_device.create_dumb_buffer(
+        (width, height),
         Fourcc::Argb8888,
-        GbmBufferFlags::SCANOUT | GbmBufferFlags::RENDERING | GbmBufferFlags::WRITE,
-    ).map_err(|e| anyhow::anyhow!("Failed to create GBM buffer: {:?}", e))?;
+        32,
+    ).map_err(|e| anyhow::anyhow!("Failed to create Dumb scanout buffer: {:?}", e))?;
 
-    // Generate vibrant Frutiger Aero Aqua gradient pixels
+    // Fill buffer with Frutiger Aqua gradient pixels
     let gradient_pixels = generate_frutiger_aero_gradient(width, height);
-    if let Err(e) = gbm_bo.write(&gradient_pixels) {
-        warn!("Failed to write pixels to GBM buffer: {:?}", e);
+    if let Ok(mut mapping) = drm_device.map_dumb_buffer(&mut dumb_buffer) {
+        let slice = mapping.as_mut();
+        let len = slice.len().min(gradient_pixels.len());
+        slice[..len].copy_from_slice(&gradient_pixels[..len]);
+        info!("Copied {} bytes of Frutiger Aero gradient to scanout buffer", len);
     }
 
     // 5. Register Framebuffer with DRM driver and light up the screen!
     let fb_handle = drm_device.add_framebuffer(
-        &gbm_bo,
+        &dumb_buffer,
         32,
         32,
     ).map_err(|e| anyhow::anyhow!("Failed to add DRM framebuffer: {:?}", e))?;
