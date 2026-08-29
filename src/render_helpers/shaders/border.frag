@@ -215,6 +215,11 @@ void main() {
     vec4 color = gradient_color(coords_geo.xy);
     color = color * niri_rounding_alpha(coords_geo.xy, geo_size, outer_radius);
 
+    // Frutiger Aero Liquid Glass Specular Highlight
+    float top_sheen = clamp(1.0 - (coords_geo.y / max(geo_size.y * 0.18, 14.0)), 0.0, 1.0);
+    float gloss = pow(top_sheen, 2.2) * 0.45;
+    color.rgb += vec3(gloss) * color.a;
+
     if (border_width > 0.0) {
         coords_geo -= vec3(border_width);
         vec2 inner_geo_size = geo_size - vec2(border_width * 2.0);
