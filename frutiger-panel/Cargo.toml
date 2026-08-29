@@ -14,7 +14,7 @@ readme = "README.md"
 anyhow.workspace = true
 chrono = "0.4"
 cairo-rs = { version = "0.21.5", features = ["use_glib"] }
-pangocairo = "0.21.5"
+pangocairo = "0.22.8"
 pango = "0.21.5"
 frutiger-ipc = { path = "../frutiger-ipc" }
 smithay-client-toolkit = { version = "0.20.0", features = ["calloop"] }
