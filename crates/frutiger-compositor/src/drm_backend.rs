@@ -1,29 +1,24 @@
 use smithay::{
     backend::{
         allocator::{
-            gbm::{GbmAllocator, GbmBufferFlags, GbmDevice},
+            gbm::{GbmBufferFlags, GbmDevice},
             Fourcc,
         },
         drm::{DrmDevice, DrmDeviceFd},
-        egl::{EGLContext, EGLDisplay},
-        renderer::{
-            damage::OutputDamageTracker,
-            element::surface::WaylandSurfaceRenderElement,
-            gles::GlesRenderer,
-        },
         session::{libseat::LibSeatSession, Session},
     },
-    output::{Mode, Output, PhysicalProperties, Subpixel},
     reexports::{
         calloop::{
             timer::{TimeoutAction, Timer},
             EventLoop,
         },
-        drm::control::{connector, Device as ControlDevice},
+        drm::control::{
+            connector,
+            Device as ControlDevice,
+        },
         rustix::fs::OFlags,
         wayland_server::Display,
     },
-    utils::Transform,
     wayland::socket::ListeningSocketSource,
 };
 use std::{path::PathBuf, sync::Arc, time::Duration};
@@ -31,10 +26,11 @@ use tracing::{info, warn};
 
 use crate::state::{ClientState, FrutigerState};
 use frutiger_config::FrutigerConfig;
+use frutiger_render::generate_frutiger_aero_gradient;
 use frutiger_shell::FrutigerShell;
 
 pub fn run_drm(config: FrutigerConfig) -> anyhow::Result<()> {
-    info!("Starting Frutiger Rust on Native DRM/KMS backend with Frutiger Aero Shell...");
+    info!("Starting Frutiger Rust on Native DRM/KMS backend...");
 
     let mut event_loop: EventLoop<FrutigerState> = EventLoop::try_new()?;
     let display: Display<FrutigerState> = Display::new()?;
@@ -68,13 +64,8 @@ pub fn run_drm(config: FrutigerConfig) -> anyhow::Result<()> {
     ).map_err(|e| anyhow::anyhow!("Failed to open DRM device: {:?}", e))?;
 
     let drm_fd = DrmDeviceFd::new(card_fd.into());
-    let (mut drm_device, _drm_notifier) = DrmDevice::new(drm_fd.clone(), true)?;
-
+    let (drm_device, _drm_notifier) = DrmDevice::new(drm_fd.clone(), true)?;
     let gbm_device = GbmDevice::new(drm_fd.clone())?;
-    let _gbm_allocator = GbmAllocator::new(gbm_device.clone(), GbmBufferFlags::RENDERING | GbmBufferFlags::SCANOUT);
-    let egl_display = unsafe { EGLDisplay::new(gbm_device.clone())? };
-    let egl_context = EGLContext::new(&egl_display)?;
-    let mut _renderer = unsafe { GlesRenderer::new(egl_context)? };
 
     // 3. Query Connectors & CRTCs
     let res_handles = drm_device.resource_handles()?;
@@ -101,34 +92,44 @@ pub fn run_drm(config: FrutigerConfig) -> anyhow::Result<()> {
     let crtc_handle = res_handles.crtcs().first().cloned()
         .ok_or_else(|| anyhow::anyhow!("No CRTC found"))?;
 
-    let (width, height) = (mode.size().0 as i32, mode.size().1 as i32);
-    info!("Selected CRTC: {:?}, Mode: {}x{}@{}Hz", crtc_handle, width, height, mode.vrefresh());
+    let (width, height) = (mode.size().0 as u32, mode.size().1 as u32);
+    info!("Selected CRTC: {:?}, Display resolution: {}x{}@{}Hz", crtc_handle, width, height, mode.vrefresh());
 
-    let _drm_surface = drm_device.create_surface(crtc_handle, mode, &[conn])?;
+    // 4. Allocate GBM Scanout Buffer & Generate Frutiger Aero Wallpaper
+    info!("Allocating hardware scanout buffer on AMD GPU...");
+    let mut gbm_bo = gbm_device.create_buffer_object::<()>(
+        width,
+        height,
+        Fourcc::Argb8888,
+        GbmBufferFlags::SCANOUT | GbmBufferFlags::RENDERING | GbmBufferFlags::WRITE,
+    ).map_err(|e| anyhow::anyhow!("Failed to create GBM buffer: {:?}", e))?;
 
-    // 4. Output & Damage Tracking
-    let output = Output::new(
-        "eDP-1".to_string(),
-        PhysicalProperties {
-            size: (width, height).into(),
-            subpixel: Subpixel::Unknown,
-            make: "Frutiger".into(),
-            model: "Laptop Display".into(),
-        },
-    );
+    // Generate vibrant Frutiger Aero Aqua gradient pixels
+    let gradient_pixels = generate_frutiger_aero_gradient(width, height);
+    if let Err(e) = gbm_bo.write(&gradient_pixels) {
+        warn!("Failed to write pixels to GBM buffer: {:?}", e);
+    }
 
-    let output_mode = Mode {
-        size: (width, height).into(),
-        refresh: (mode.vrefresh() * 1000) as i32,
-    };
-    output.change_current_state(Some(output_mode), Some(Transform::Normal), None, Some((0, 0).into()));
-    output.set_preferred(output_mode);
+    // 5. Register Framebuffer with DRM driver and light up the screen!
+    let fb_handle = drm_device.add_framebuffer(
+        &gbm_bo,
+        32,
+        32,
+    ).map_err(|e| anyhow::anyhow!("Failed to add DRM framebuffer: {:?}", e))?;
 
-    let mut _damage_tracker = OutputDamageTracker::from_output(&output);
+    info!("DRM Framebuffer registered (Handle: {:?}). Activating CRTC scanout...", fb_handle);
+    drm_device.set_crtc(
+        crtc_handle,
+        Some(fb_handle),
+        (0, 0),
+        &[conn],
+        Some(mode),
+    ).map_err(|e| anyhow::anyhow!("Failed to set CRTC scanout: {:?}", e))?;
 
-    // 5. Initialize State & Wayland Socket
+    info!("✨✨ Physical screen successfully lit with Frutiger Aero background! ✨✨");
+
+    // 6. Initialize State & Wayland Socket
     let mut state = FrutigerState::new(&display, event_loop.get_signal(), config);
-    state.space.map_output(&output, (0, 0));
 
     let socket = ListeningSocketSource::new_auto()?;
     let socket_name = socket.socket_name().to_string_lossy().into_owned();
@@ -148,10 +149,9 @@ pub fn run_drm(config: FrutigerConfig) -> anyhow::Result<()> {
 
     info!("=== Frutiger Rust Native Compositor Running ===");
 
-    // 6. Frame Render Loop
-    let timer = Timer::from_duration(Duration::from_millis(16));
+    // Periodic animation / clock timer
+    let timer = Timer::from_duration(Duration::from_millis(500));
     event_loop.handle().insert_source(timer, move |_deadline, _, _state| {
-        // Update live clock
         let now = std::time::SystemTime::now();
         if let Ok(duration) = now.duration_since(std::time::UNIX_EPOCH) {
             let secs = duration.as_secs();
@@ -160,7 +160,7 @@ pub fn run_drm(config: FrutigerConfig) -> anyhow::Result<()> {
             shell.update_time(&format!("{:02}:{:02}", hours, mins));
         }
 
-        TimeoutAction::ToDuration(Duration::from_millis(16))
+        TimeoutAction::ToDuration(Duration::from_millis(500))
     }).map_err(|e| anyhow::anyhow!("Timer insert error: {:?}", e))?;
 
     while state.is_running {
