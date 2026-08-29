@@ -333,28 +333,11 @@ fn import_environment() {
 
 fn env_config_path() -> Option<PathBuf> {
     env::var_os("FRUTIGER_CONFIG")
-        .or_else(|| env::var_os("NIRI_CONFIG"))
         .filter(|x| !x.is_empty())
         .map(PathBuf::from)
 }
 
 fn default_config_path() -> Option<PathBuf> {
-    if let Some(dirs) = ProjectDirs::from("", "", "frutiger") {
-        let mut path = dirs.config_dir().to_owned();
-        path.push("config.kdl");
-        if path.exists() {
-            return Some(path);
-        }
-    }
-
-    if let Some(dirs) = ProjectDirs::from("", "", "niri") {
-        let mut path = dirs.config_dir().to_owned();
-        path.push("config.kdl");
-        if path.exists() {
-            return Some(path);
-        }
-    }
-
     let dirs = ProjectDirs::from("", "", "frutiger")?;
     let mut path = dirs.config_dir().to_owned();
     path.push("config.kdl");
@@ -362,12 +345,7 @@ fn default_config_path() -> Option<PathBuf> {
 }
 
 fn system_config_path() -> PathBuf {
-    let p = PathBuf::from("/etc/frutiger/config.kdl");
-    if p.exists() {
-        p
-    } else {
-        PathBuf::from("/etc/niri/config.kdl")
-    }
+    PathBuf::from("/etc/frutiger/config.kdl")
 }
 
 fn config_path(cli_path: Option<PathBuf>) -> ConfigPath {
